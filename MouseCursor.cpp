@@ -3,21 +3,21 @@
 class MouseCursor
 {
 private:
-	POINT point;
-	
+    POINT point;
+    
 public:
-	MouseCursor()
-	{
-		GetCursorPos(&this->point);
+    MouseCursor()
+    {
+        GetCursorPos(&this->point);
     }
-	
-	int getX()
-	{
-		return this->point.x;
-	}
-	
-	int getY()
-	{
-		return this->point.y;
-	}
+    
+    int getX()
+    {
+        return this->point.x;
+    }
+    
+    int getY()
+    {
+        return this->point.y;
+    }
 };
