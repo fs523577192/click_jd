@@ -1,3 +1,6 @@
+#ifndef __MOUSE_CURSOR__
+#define __MOUSE_CURSOR__
+
 #include <Windows.h>
 
 class MouseCursor
@@ -21,3 +24,4 @@ public:
         return this->point.y;
     }
 };
+#endif // __MOUSE_CURSOR__

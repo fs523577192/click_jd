@@ -1,7 +1,9 @@
 #include <cstdio>
-#include "Window.cpp"
-#include "MouseCursor.cpp"
-#include "click.cpp"
+#include "window/ScreenSize.cpp"
+#include "window/Window.cpp"
+#include "mouse/MouseCursor.cpp"
+#include "mouse/ClickHelper.cpp"
+#include "mouse/DragHelper.cpp"
 
 extern "C" {
     
@@ -12,12 +14,15 @@ TCHAR outputBuffer[] = TEXT("(0000, 0000)        ");
 // global variable definition
 int sequenceIndex = 0, sequenceCount = 0;
 LONG sequences[100][3];
+Logger *pLogger;
 Window *pEmulatorWindow;
 ClickHelper *pClickHelper;
+DragHelper *pDragHelper;
 
 // function definition
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void CALLBACK TimerProc(HWND, UINT, UINT_PTR, DWORD);
+void init();
 void initSequences();
 void enterTwoStores();
 void favorStores();
@@ -31,9 +36,10 @@ int CALLBACK _tWinMain(
     LPTSTR lpCmdLine,
     int nCmdShow
 ) {
+    pLogger = new Logger(TEXT("K:\\c_c++\\my_clicks\\log.txt"));
     try {
         Window mainWindow(hInstance, TEXT("mainWindow"), TEXT("My Window"), WndProc,
-                Window::DEFAULT, Window::DEFAULT, 300, 300);
+                Window::DEFAULT, Window::DEFAULT, 300, 300, pLogger);
         mainWindow.show(nCmdShow);
         mainWindow.update();
         mainWindow.messageLoop();
@@ -56,10 +62,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
         emulatorWindow = FindWindow(NULL, TEXT("雷电模拟器"));
         if (emulatorWindow) {
-            _stprintf(outputBuffer, TEXT("%X"), emulatorWindow);
-            
-            pEmulatorWindow = new Window(emulatorWindow);
-            pClickHelper = new ClickHelper();
+            pEmulatorWindow = new Window(emulatorWindow, pLogger);
+            init();
             initSequences();
             
             SetTimer(hwnd, 1, 3000, (TIMERPROC) TimerProc);
@@ -97,6 +101,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hwnd, message, wParam, lParam);        //DefWindowProc处理我们自定义的消息处理函数没有处理到的消息
 }
 
+void init()
+{
+    ScreenSize *pScreenSize = new ScreenSize(pLogger);
+    pClickHelper = new ClickHelper(pScreenSize, pLogger);
+    pDragHelper = new DragHelper(pScreenSize, pLogger);
+}
+
 void CALLBACK TimerProc(HWND hwnd, UINT arg2, UINT_PTR timerId, DWORD arg4)
 {
     RECT rect;
@@ -109,7 +120,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT arg2, UINT_PTR timerId, DWORD arg4)
     
     KillTimer(hwnd, timerId);
     
-    if (sequenceIndex < sequenceCount) {
+    if (sequenceIndex < 1 /*sequenceCount*/) {
         SetTimer(hwnd, timerId, sequence[2], (TIMERPROC) TimerProc);
     }
 }
